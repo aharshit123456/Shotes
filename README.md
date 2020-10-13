@@ -1,7 +1,6 @@
 # Shotes
 
-**Have A Very Long Workout ??**
-This Application Makes your job of counting reps while working out a piece of cake.
+**One App for all Academics**
 
 <img width="1000" text-align="center" alt="LoginWindow" src="UIDesign/5_objects.png">
 
