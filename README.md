@@ -4,6 +4,20 @@
 
 <img width="1000" text-align="center" alt="LoginWindow" src="UIDesign/5_objects.png">
 
+**WebRTC UI**
+
+
+<table style="border-collapse:collapse;" cellspacing="0" cellpadding="0">
+  <tr>
+    <td><img width="90%" text-align="center" alt="Landscape - RTC" src="UIDesign/Live-Class-Landscape-S T.jpeg"></td>
+    <td><img width="90%" text-align="center" alt="Portrait - RTC" src="UIDesign/Slice.jpeg"></td>
+  </tr>
+   <tr>
+    <td align="center">Landscape</td>
+     <td align="center">Portrait</td>
+  </tr>
+ </table>
+
 ***
 ## Newer researches to be possibly implemented
 
