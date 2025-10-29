@@ -1,11 +1,11 @@
 import { IonContent, IonHeader, IonPage, IonSearchbar, IonTitle, IonToolbar, IonCard, IonCardContent, IonItem, IonAvatar, IonLabel, IonButton, IonToast } from '@ionic/react';
 import React, { useEffect, useState } from 'react';
-import { getCourses, enrollInCourse, getStudentEnrollments } from '../shared/services/api';
+import { getCourses, enrollInCourse, getStudentEnrollments, type Course, type Enrollment } from '../shared/services/api';
 
 const STUDENT_ID = 'student1'; // TODO: Get from auth context
 
 const Explore: React.FC = () => {
-  const [courses, setCourses] = useState<any[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [enrolledCourses, setEnrolledCourses] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -17,13 +17,13 @@ const Explore: React.FC = () => {
       try {
         const [allCourses, enrollments] = await Promise.all([
           getCourses(),
-          getStudentEnrollments(STUDENT_ID).catch(() => [])
+          getStudentEnrollments(STUDENT_ID).catch(() => [] as Enrollment[])
         ]);
 
-        setCourses(allCourses.filter((c: any) => c.is_published));
+        setCourses(allCourses.filter((c) => !!c.is_published));
 
         // Track enrolled course IDs
-        const enrolledIds = new Set(enrollments.map((e: any) => e.course_id));
+        const enrolledIds = new Set(enrollments.map((e) => e.course_id));
         setEnrolledCourses(enrolledIds);
       } catch (error) {
         console.error('Failed to load courses:', error);
@@ -34,7 +34,7 @@ const Explore: React.FC = () => {
     loadData();
   }, []);
 
-  const filteredCourses = courses.filter((course: any) =>
+  const filteredCourses = courses.filter((course) =>
     course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     course.subject.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -76,13 +76,13 @@ const Explore: React.FC = () => {
           <IonSearchbar
             placeholder="Search"
             value={searchTerm}
-            onIonInput={(e) => setSearchTerm(e.detail.value || '')}
+            onIonInput={(e) => setSearchTerm((e as CustomEvent<{ value?: string }>).detail.value || '')}
             style={{ marginBottom: 16 }}
           />
           {loading ? (
             <div>Loading...</div>
           ) : filteredCourses.length > 0 ? (
-            filteredCourses.map((course: any) => (
+            filteredCourses.map((course) => (
               <IonCard key={course.id} style={{ marginBottom: 12 }}>
                 <IonCardContent>
                   <IonItem lines="none">

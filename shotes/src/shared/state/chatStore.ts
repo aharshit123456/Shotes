@@ -65,7 +65,7 @@ const creator: StateCreator<ChatState> = (set, get) => ({
         fetch(`${API_HTTP_BASE}/messages/${roomId}`)
           .then(res => res.json())
           .then(msgs => {
-            const formattedMsgs = msgs.map((m: any) => ({
+            const formattedMsgs = (msgs as import('../services/api').MessageDTO[]).map((m) => ({
               id: m.id,
               author: m.author,
               text: m.text,

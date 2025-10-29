@@ -35,6 +35,46 @@ function toWsBase(httpBase: string): string {
 
 export const WS_BASE = toWsBase(API_HTTP_BASE);
 
+// Domain types
+export interface Course {
+  id: string;
+  title: string;
+  subject: string;
+  description?: string;
+  modules_count?: number;
+  teacher_id?: string;
+  is_published?: boolean;
+}
+
+export interface Enrollment {
+  id: string;
+  student_id: string;
+  course_id: string;
+}
+
+export interface Grade {
+  id: string;
+  student_id: string;
+  course_id: string;
+  grade_letter: string;
+  percentage: number;
+}
+
+export interface GradeInput {
+  student_id: string;
+  course_id: string;
+  enrollment_id: string;
+  grade_letter: string;
+  percentage: number;
+}
+
+export interface MessageDTO {
+  id: string;
+  author: string;
+  text: string;
+  timestamp: string | number;
+}
+
 export const api = {
   async get<T>(endpoint: string): Promise<T> {
     const response = await fetch(`${API_HTTP_BASE}${endpoint}`);
@@ -44,7 +84,7 @@ export const api = {
     return response.json();
   },
 
-  async post<T>(endpoint: string, data: any): Promise<T> {
+  async post<T>(endpoint: string, data: unknown): Promise<T> {
     const response = await fetch(`${API_HTTP_BASE}${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -56,7 +96,7 @@ export const api = {
     return response.json();
   },
 
-  async put<T>(endpoint: string, data: any): Promise<T> {
+  async put<T>(endpoint: string, data: unknown): Promise<T> {
     const response = await fetch(`${API_HTTP_BASE}${endpoint}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -71,36 +111,36 @@ export const api = {
 
 // Dashboard APIs
 export const getStudentActivities = (studentId: string) =>
-  api.get<any[]>(`/dashboard/activities/${studentId}`);
+  api.get<Record<string, unknown>[]>(`/dashboard/activities/${studentId}`);
 
 export const getStudentGrades = (studentId: string) =>
-  api.get<any[]>(`/dashboard/grades/${studentId}`);
+  api.get<Grade[]>(`/dashboard/grades/${studentId}`);
 
-export const updateGrade = (gradeId: string, gradeData: any) =>
-  api.put<any>(`/grades/${gradeId}`, gradeData);
+export const updateGrade = (gradeId: string, gradeData: GradeInput) =>
+  api.put<Grade>(`/grades/${gradeId}`, gradeData);
 
 export const getTopScores = (studentId: string) =>
-  api.get<any[]>(`/dashboard/scores/${studentId}`);
+  api.get<Record<string, unknown>[]>(`/dashboard/scores/${studentId}`);
 
 // Courses APIs
-export const getCourses = () => api.get<any[]>('/courses');
-export const getCourse = (id: string) => api.get<any>(`/courses/${id}`);
+export const getCourses = () => api.get<Course[]>('/courses');
+export const getCourse = (id: string) => api.get<Course>(`/courses/${id}`);
 
 // Enrollments APIs
 export const getStudentEnrollments = (studentId: string) =>
-  api.get<any[]>(`/enrollments/student/${studentId}`);
+  api.get<Enrollment[]>(`/enrollments/student/${studentId}`);
 
 export const enrollInCourse = (studentId: string, courseId: string) =>
-  api.post<any>('/enrollments', { student_id: studentId, course_id: courseId });
+  api.post<Enrollment>('/enrollments', { student_id: studentId, course_id: courseId });
 
 // Classes APIs
 export const getCourseClasses = (courseId: string) =>
-  api.get<any[]>(`/classes/course/${courseId}`);
+  api.get<Record<string, unknown>[]>(`/classes/course/${courseId}`);
 
 export const getLiveClasses = (courseId: string) =>
-  api.get<any[]>(`/classes/live/${courseId}`);
+  api.get<Record<string, unknown>[]>(`/classes/live/${courseId}`);
 
 // Tests APIs
 export const getCourseTests = (courseId: string) =>
-  api.get<any[]>(`/tests/course/${courseId}`);
+  api.get<Record<string, unknown>[]>(`/tests/course/${courseId}`);
 

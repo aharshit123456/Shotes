@@ -1,9 +1,9 @@
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonCard, IonCardContent, IonItem, IonLabel, IonButton, IonInput, IonSelect, IonSelectOption, IonToast, IonGrid, IonRow, IonCol } from '@ionic/react';
 import React, { useEffect, useState } from 'react';
-import { getCourses, getStudentEnrollments, getStudentGrades, updateGrade } from '../shared/services/api';
+import { getCourses, getStudentEnrollments, getStudentGrades, updateGrade, type Course, type Enrollment, type Grade, type GradeInput } from '../shared/services/api';
 
 // Add createGrade function to API service (using env-based backend URL)
-const createGrade = async (gradeData: any) => {
+const createGrade = async (gradeData: GradeInput) => {
   const { API_HTTP_BASE } = await import('../shared/services/api');
   return fetch(`${API_HTTP_BASE}/grades`, {
     method: 'POST',
@@ -29,7 +29,7 @@ interface StudentGrade {
 }
 
 const Grades: React.FC = () => {
-  const [courses, setCourses] = useState<any[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState<string>('');
   const [studentGrades, setStudentGrades] = useState<StudentGrade[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +41,7 @@ const Grades: React.FC = () => {
       try {
         const allCourses = await getCourses();
         // Filter courses taught by this teacher
-        const teacherCourses = allCourses.filter((c: any) => c.teacher_id === TEACHER_ID);
+        const teacherCourses = allCourses.filter((c) => c.teacher_id === TEACHER_ID);
         setCourses(teacherCourses);
         if (teacherCourses.length > 0) {
           setSelectedCourseId(teacherCourses[0].id);
@@ -64,14 +64,14 @@ const Grades: React.FC = () => {
   const loadStudentGrades = async (courseId: string) => {
     try {
       setLoading(true);
-      const enrollments = await getStudentEnrollments(courseId);
+      const enrollments: Enrollment[] = await getStudentEnrollments(courseId);
 
       const gradesData: StudentGrade[] = [];
 
       for (const enrollment of enrollments) {
         try {
-          const grades = await getStudentGrades(enrollment.student_id);
-          const courseGrade = grades.find((g: any) => g.course_id === courseId);
+          const grades: Grade[] = await getStudentGrades(enrollment.student_id);
+          const courseGrade = grades.find((g) => g.course_id === courseId);
 
           gradesData.push({
             id: courseGrade?.id || `temp_${enrollment.student_id}_${courseId}`,
@@ -178,10 +178,10 @@ const Grades: React.FC = () => {
             <IonLabel position="stacked">Select Course</IonLabel>
             <IonSelect
               value={selectedCourseId}
-              onSelectionChange={(e) => setSelectedCourseId(e.detail.value)}
+              onIonChange={(e) => setSelectedCourseId((e as CustomEvent<{ value: string }>).detail.value)}
               placeholder="Choose a course"
             >
-              {courses.map((course: any) => (
+              {courses.map((course) => (
                 <IonSelectOption key={course.id} value={course.id}>
                   {course.title}
                 </IonSelectOption>
@@ -206,7 +206,7 @@ const Grades: React.FC = () => {
                             <IonLabel position="stacked">Grade Letter</IonLabel>
                             <IonSelect
                               value={grade.grade_letter}
-                              onSelectionChange={(e) => updateStudentGrade(index, 'grade_letter', e.detail.value)}
+                              onIonChange={(e) => updateStudentGrade(index, 'grade_letter', (e as CustomEvent<{ value: string }>).detail.value)}
                               placeholder="Select grade"
                             >
                               <IonSelectOption value="A+">A+</IonSelectOption>
