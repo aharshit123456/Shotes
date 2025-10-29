@@ -68,7 +68,8 @@ ALLOWED_ORIGINS = [
     "capacitor://localhost",
     "ionic://localhost",
     "https://shotes.onrender.com",
-    "https://shotes.vercel.app/"
+    "https://shotes-9vw6.vercel.app/",
+    "https://shotes.vercel.app"
 ]
 
 app.add_middleware(
