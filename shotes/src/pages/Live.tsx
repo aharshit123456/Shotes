@@ -29,8 +29,8 @@ const Live: React.FC = () => {
       pcRef.current = pc;
 
       // Local tracks
-      if (videoRef.current && (videoRef.current as any).srcObject) {
-        const stream = (videoRef.current as HTMLVideoElement).srcObject as MediaStream;
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
         stream.getTracks().forEach(track => pc.addTrack(track, stream));
       }
 
