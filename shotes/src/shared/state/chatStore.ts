@@ -30,7 +30,9 @@ const creator: StateCreator<ChatState> = (set, get) => ({
       try {
         const userStr = localStorage.getItem('auth_user');
         if (userStr) senderId = JSON.parse(userStr).id || '';
-      } catch (_) {}
+      } catch (_) {
+        // Ignore JSON parse errors; send without sender_id
+      }
       state.ws.send(JSON.stringify({
         sender_id: senderId,
         text,

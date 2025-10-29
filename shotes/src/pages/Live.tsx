@@ -71,7 +71,9 @@ const Live: React.FC = () => {
         } else if (msg.type === 'ice' && msg.candidate) {
           try {
             await pcRef.current.addIceCandidate(new RTCIceCandidate(msg.candidate));
-          } catch (_) {}
+          } catch (_) {
+            // Ignore invalid/duplicate ICE candidates
+          }
         }
       };
 
