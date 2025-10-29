@@ -68,13 +68,14 @@ ALLOWED_ORIGINS = [
     "capacitor://localhost",
     "ionic://localhost",
     "https://shotes.onrender.com",
-    "https://shotes-9vw6.vercel.app/",
-    "https://shotes.vercel.app"
+    "https://shotes-9vw6.vercel.app",
+    "https://shotes.vercel.app",
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r"https://shotes-[a-z0-9-]+\.vercel\.app$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -153,25 +154,29 @@ async def websocket_rtc_signalling(websocket: WebSocket, class_id: str):
 
 @app.get("/api/v1/messages/{room_id}")
 async def get_messages(room_id: str, limit: int = 50):
-    with Session(engine) as session:
-        messages = session.exec(
-            select(Message)
-            .where(Message.room_id == room_id)
-            .order_by(Message.created_at.desc())
-            .limit(limit)
-        ).all()
-        
-        result = []
-        for msg in messages:
-            sender = session.get(app.models.user.User, msg.sender_id)
-            result.append({
-                "id": msg.id,
-                "sender_id": msg.sender_id,
-                "author": sender.full_name if sender else "Anonymous",
-                "text": msg.text,
-                "timestamp": msg.created_at.isoformat()
-            })
-        return result
+    try:
+        with Session(engine) as session:
+            messages = session.exec(
+                select(Message)
+                .where(Message.room_id == room_id)
+                .order_by(Message.created_at.desc())
+                .limit(limit)
+            ).all()
+
+            result = []
+            for msg in messages:
+                sender = session.get(app.models.user.User, msg.sender_id)
+                result.append({
+                    "id": msg.id,
+                    "sender_id": msg.sender_id,
+                    "author": sender.full_name if sender else "Anonymous",
+                    "text": msg.text,
+                    "timestamp": msg.created_at.isoformat()
+                })
+            return result
+    except Exception:
+        # Return empty list on backend errors to avoid 500s breaking CORS
+        return []
 
 if __name__ == "__main__":
     import uvicorn
