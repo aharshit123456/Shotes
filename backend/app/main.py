@@ -59,9 +59,21 @@ app = FastAPI(
 )
 
 # CORS middleware
+# CORS: explicitly allow development and production frontends.
+# Note: when allow_credentials=True, FastAPI disallows '*' for allow_origins.
+ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:3000",
+    "capacitor://localhost",
+    "ionic://localhost",
+    "https://shotes.onrender.com",
+    "https://shotes-9vw6.vercel.app/"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # broaden to avoid dev CORS issues
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
