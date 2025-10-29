@@ -47,7 +47,7 @@ const Grades: React.FC = () => {
           setSelectedCourseId(teacherCourses[0].id);
         }
       } catch (_error) {
-        
+        // Silently handle errors - UI will show empty state
       } finally {
         setLoading(false);
       }
@@ -99,8 +99,8 @@ const Grades: React.FC = () => {
       }
 
       setStudentGrades(gradesData);
-    } catch (_error) {
-      
+    } catch (__error) {
+      // Silently handle errors - UI will show empty state
     } finally {
       setLoading(false);
     }

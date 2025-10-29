@@ -26,6 +26,7 @@ const Explore: React.FC = () => {
         const enrolledIds = new Set(enrollments.map((e) => e.course_id));
         setEnrolledCourses(enrolledIds);
       } catch (_error) {
+        // Silently handle errors - UI will show empty state
       } finally {
         setLoading(false);
       }
