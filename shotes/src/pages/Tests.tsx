@@ -68,7 +68,7 @@ const Tests: React.FC = () => {
           {loading ? (
             <div>Loading...</div>
           ) : tests.length > 0 ? (
-            tests.map((test: any) => (
+            tests.map((test) => (
               <IonCard key={test.id} style={{ marginBottom: 12 }}>
                 <IonCardContent>
                   <IonItem lines="none">

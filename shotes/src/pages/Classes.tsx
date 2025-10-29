@@ -93,7 +93,7 @@ const Classes: React.FC = () => {
           {loading ? (
             <div>Loading...</div>
           ) : currentClasses.length > 0 ? (
-            currentClasses.map((cls: any) => (
+            currentClasses.map((cls) => (
               <IonCard key={cls.id} style={{ marginBottom: 12 }}>
                 <IonCardContent>
                   <IonItem lines="none">
@@ -135,7 +135,7 @@ const Classes: React.FC = () => {
 
           <h2 style={{ marginTop: 24, marginBottom: 12 }}>Upcoming Classes</h2>
           {upcomingClasses.length > 0 ? (
-            upcomingClasses.map((cls: any) => (
+            upcomingClasses.map((cls) => (
               <IonCard key={cls.id} style={{ marginBottom: 12 }}>
                 <IonCardContent>
                   <IonItem lines="none">

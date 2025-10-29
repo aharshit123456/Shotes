@@ -1,7 +1,7 @@
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonCard, IonCardContent, IonItem, IonLabel, IonButton, IonAvatar } from '@ionic/react';
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { getStudentGrades, getTopScores, getStudentEnrollments, type Grade, type Enrollment, type TopScore } from '../shared/services/api';
+import { getStudentGrades, getTopScores, getStudentEnrollments, type Grade, type Enrollment } from '../shared/services/api';
 import { useAuthStore } from '../shared/state/authStore';
 
 const Profile: React.FC = () => {
