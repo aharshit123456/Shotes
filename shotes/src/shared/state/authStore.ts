@@ -23,7 +23,8 @@ const creator: StateCreator<AuthState> = (set) => ({
   isAuthenticated: false,
   
   login: async (email: string, password: string) => {
-    const response = await fetch('http://localhost:8000/api/v1/auth/login', {
+    const { API_HTTP_BASE } = await import('../services/api');
+    const response = await fetch(`${API_HTTP_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -47,7 +48,8 @@ const creator: StateCreator<AuthState> = (set) => ({
   },
   
   register: async (email: string, password: string, full_name: string, username: string, role: 'teacher' | 'student') => {
-    const response = await fetch('http://localhost:8000/api/v1/auth/register', {
+    const { API_HTTP_BASE } = await import('../services/api');
+    const response = await fetch(`${API_HTTP_BASE}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password, full_name, username, role }),

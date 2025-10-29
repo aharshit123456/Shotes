@@ -14,27 +14,34 @@ const Live: React.FC = () => {
     if (!classId) return;
     
     // Connect to WebRTC signalling server
-    const ws = new WebSocket(`ws://localhost:8000/ws/rtc/${classId}`);
-    wsRef.current = ws;
+    const init = async () => {
+      const { WS_BASE } = await import('../shared/services/api');
+      const socket = new WebSocket(`${WS_BASE}/ws/rtc/${classId}`);
+      wsRef.current = socket;
 
-    ws.onopen = () => {
-      console.log('Connected to WebRTC signalling server');
-    };
+      socket.onopen = () => {
+        console.log('Connected to WebRTC signalling server');
+      };
 
-    ws.onmessage = (event) => {
-      // Handle SDP offers/answers and ICE candidates
-      const data = JSON.parse(event.data);
-      console.log('WebRTC signal received:', data);
-      // Here you would handle peer connection setup
-      // This is a simplified version - full WebRTC implementation would use RTCPeerConnection
-    };
+      socket.onmessage = (event) => {
+        // Handle SDP offers/answers and ICE candidates
+        const data = JSON.parse(event.data);
+        console.log('WebRTC signal received:', data);
+        // Here you would handle peer connection setup
+        // This is a simplified version - full WebRTC implementation would use RTCPeerConnection
+      };
 
-    ws.onerror = (error) => {
-      console.error('WebRTC signalling error:', error);
+      socket.onerror = (error) => {
+        console.error('WebRTC signalling error:', error);
+      };
     };
+    init();
 
     return () => {
-      ws.close();
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
     };
   }, [classId]);
 

@@ -2,9 +2,10 @@ import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonCard, IonCardC
 import React, { useEffect, useState } from 'react';
 import { getCourses, getStudentEnrollments, getStudentGrades, updateGrade } from '../shared/services/api';
 
-// Add createGrade function to API service
-const createGrade = (gradeData: any) => {
-  return fetch('http://localhost:8000/api/v1/grades', {
+// Add createGrade function to API service (using env-based backend URL)
+const createGrade = async (gradeData: any) => {
+  const { API_HTTP_BASE } = await import('../shared/services/api');
+  return fetch(`${API_HTTP_BASE}/grades`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(gradeData),

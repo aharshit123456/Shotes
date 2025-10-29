@@ -12,7 +12,7 @@ type ChatState = {
   messages: ChatMessage[];
   sendMessage: (text: string) => void;
   seedDemoMessages: () => void;
-  connectWebSocket: (roomId: string) => void;
+  connectWebSocket: (roomId: string) => Promise<void>;
   disconnectWebSocket: () => void;
   isConnected: boolean;
   ws: WebSocket | null;
@@ -49,19 +49,20 @@ const creator: StateCreator<ChatState> = (set, get) => ({
     ];
     set({ messages: seed });
   },
-  connectWebSocket: (roomId: string) => {
+  connectWebSocket: async (roomId: string) => {
     const state = get();
     if (state.ws) {
       state.ws.close();
     }
 
     try {
-      const ws = new WebSocket(`ws://localhost:8000/ws/chat/${roomId}`);
+      const { WS_BASE, API_HTTP_BASE } = await import('../services/api');
+      const ws = new WebSocket(`${WS_BASE}/ws/chat/${roomId}`);
       
       ws.onopen = () => {
         set({ isConnected: true, ws });
         // Load recent messages
-        fetch(`http://localhost:8000/api/v1/messages/${roomId}`)
+        fetch(`${API_HTTP_BASE}/messages/${roomId}`)
           .then(res => res.json())
           .then(msgs => {
             const formattedMsgs = msgs.map((m: any) => ({

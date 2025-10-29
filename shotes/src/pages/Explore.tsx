@@ -42,7 +42,7 @@ const Explore: React.FC = () => {
   const handleEnroll = async (courseId: string, courseTitle: string) => {
     try {
       await enrollInCourse(STUDENT_ID, courseId);
-      setEnrolledCourses(prev => new Set([...prev, courseId]));
+      setEnrolledCourses(prev => new Set([...Array.from(prev), courseId]));
       setToastMessage(`Successfully enrolled in ${courseTitle}!`);
       setShowToast(true);
     } catch (error) {
