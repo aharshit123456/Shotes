@@ -47,6 +47,16 @@ manager = ConnectionManager()
 async def lifespan(app: FastAPI):
     # Startup
     SQLModel.metadata.create_all(bind=engine)
+    # Ensure legacy SQLite databases have the 'message_type' column
+    try:
+        with engine.connect() as conn:
+            result = conn.exec_driver_sql("PRAGMA table_info(message);")
+            cols = [row[1] for row in result.fetchall()]
+            if 'message_type' not in cols:
+                conn.exec_driver_sql("ALTER TABLE message ADD COLUMN message_type VARCHAR(50) DEFAULT 'course_chat'")
+    except Exception:
+        # If migration fails, continue startup; endpoint guards will handle errors
+        pass
     yield
     # Shutdown
     pass

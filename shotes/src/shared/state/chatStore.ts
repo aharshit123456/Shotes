@@ -25,10 +25,16 @@ const creator: StateCreator<ChatState> = (set, get) => ({
   sendMessage: (text: string) => {
     const state = get();
     if (state.ws && state.isConnected) {
-      // Send via WebSocket
+      // Send via WebSocket to backend schema
+      let senderId = '';
+      try {
+        const userStr = localStorage.getItem('auth_user');
+        if (userStr) senderId = JSON.parse(userStr).id || '';
+      } catch (_) {}
       state.ws.send(JSON.stringify({
-        author: 'You',
-        text
+        sender_id: senderId,
+        text,
+        message_type: 'course_chat'
       }));
     } else {
       // Fallback to local storage
