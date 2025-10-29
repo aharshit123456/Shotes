@@ -54,6 +54,10 @@ async def lifespan(app: FastAPI):
             cols = [row[1] for row in result.fetchall()]
             if 'message_type' not in cols:
                 conn.exec_driver_sql("ALTER TABLE message ADD COLUMN message_type VARCHAR(50) DEFAULT 'course_chat'")
+            if 'sender_id' not in cols:
+                conn.exec_driver_sql("ALTER TABLE message ADD COLUMN sender_id TEXT DEFAULT ''")
+            if 'created_at' not in cols:
+                conn.exec_driver_sql("ALTER TABLE message ADD COLUMN created_at DATETIME DEFAULT (datetime('now'))")
     except Exception:
         # If migration fails, continue startup; endpoint guards will handle errors
         pass
