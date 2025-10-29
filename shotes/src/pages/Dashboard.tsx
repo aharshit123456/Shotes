@@ -1,28 +1,28 @@
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonItem, IonLabel } from '@ionic/react';
 import React, { useEffect, useState } from 'react';
-import { getStudentActivities, getStudentGrades, getTopScores } from '../shared/services/api';
+import { getStudentActivities, getStudentGrades, getTopScores, type Grade, type Activity, type TopScore } from '../shared/services/api';
 
 const STUDENT_ID = 'student1'; // TODO: Get from auth context
 
 const Dashboard: React.FC = () => {
-  const [activities, setActivities] = useState<any[]>([]);
-  const [grades, setGrades] = useState<any[]>([]);
-  const [scores, setScores] = useState<any[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [grades, setGrades] = useState<Grade[]>([]);
+  const [scores, setScores] = useState<TopScore[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
       try {
         const [acts, grds, scrs] = await Promise.all([
-          getStudentActivities(STUDENT_ID).catch(() => []),
-          getStudentGrades(STUDENT_ID).catch(() => []),
-          getTopScores(STUDENT_ID).catch(() => []),
+          getStudentActivities(STUDENT_ID).catch(() => [] as Activity[]),
+          getStudentGrades(STUDENT_ID).catch(() => [] as Grade[]),
+          getTopScores(STUDENT_ID).catch(() => [] as TopScore[]),
         ]);
         setActivities(acts.slice(0, 3));
         setGrades(grds.slice(0, 4));
         setScores(scrs.slice(0, 2));
-      } catch (error) {
-        console.error('Failed to load dashboard data:', error);
+      } catch (_error) {
+        // failed to load dashboard data
       } finally {
         setLoading(false);
       }

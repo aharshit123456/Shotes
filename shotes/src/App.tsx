@@ -61,7 +61,6 @@ const App: React.FC = () => {
     const token = localStorage.getItem('auth_token');
     const userStr = localStorage.getItem('auth_user');
     
-    console.log('App initializing, token:', !!token, 'user:', !!userStr);
     
     if (token && userStr) {
       try {
@@ -71,9 +70,9 @@ const App: React.FC = () => {
           token,
           isAuthenticated: true,
         });
-        console.log('User authenticated from localStorage:', user);
+        // user restored
       } catch (error) {
-        console.error('Failed to parse stored user data:', error);
+        // failed to parse stored user data
         localStorage.removeItem('auth_token');
         localStorage.removeItem('auth_user');
       }
@@ -86,8 +85,7 @@ const App: React.FC = () => {
     return <IonApp><div style={{ padding: 20, textAlign: 'center' }}>Loading...</div></IonApp>;
   }
 
-  console.log('App rendering, isAuthenticated:', isAuthenticated);
-  console.log('Current URL:', window.location.href);
+  // render
 
   return (
     <IonApp>

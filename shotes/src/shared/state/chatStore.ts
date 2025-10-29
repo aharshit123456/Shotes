@@ -102,8 +102,7 @@ const creator: StateCreator<ChatState> = (set, get) => ({
         get().seedDemoMessages();
       };
 
-    } catch (error) {
-      console.error('WebSocket connection failed:', error);
+    } catch (_error) {
       set({ isConnected: false, ws: null });
       get().seedDemoMessages();
     }

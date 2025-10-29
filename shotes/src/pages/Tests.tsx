@@ -1,29 +1,28 @@
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonCard, IonCardContent, IonItem, IonLabel, IonChip } from '@ionic/react';
 import React, { useEffect, useState } from 'react';
-import { getStudentEnrollments } from '../shared/services/api';
-import { getCourseTests } from '../shared/services/api';
-import { getCourses } from '../shared/services/api';
+import { getStudentEnrollments, getCourseTests, getCourses, type Enrollment, type Course } from '../shared/services/api';
 
 const STUDENT_ID = 'student1';
 
 const Tests: React.FC = () => {
-  const [tests, setTests] = useState<any[]>([]);
+  type CourseTest = { id: string; title: string; scheduled_date: string; course?: Course | null };
+  const [tests, setTests] = useState<CourseTest[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const enrolls = await getStudentEnrollments(STUDENT_ID).catch(() => []);
-        const allTests: any[] = [];
+        const enrolls = await getStudentEnrollments(STUDENT_ID).catch(() => [] as Enrollment[]);
+        const allTests: CourseTest[] = [];
 
         for (const enroll of enrolls) {
-          const courseTests = await getCourseTests(enroll.course_id).catch(() => []);
+          const courseTests = await getCourseTests(enroll.course_id).catch(() => [] as any[]);
           const course = await getCourses().then(courses => 
-            courses.find((c: any) => c.id === enroll.course_id)
+            courses.find((c) => c.id === enroll.course_id) || null
           ).catch(() => null);
           
           courseTests.forEach((test: any) => {
-            allTests.push({ ...test, course });
+            allTests.push({ ...test, course } as CourseTest);
           });
         }
 
@@ -33,8 +32,8 @@ const Tests: React.FC = () => {
         );
 
         setTests(allTests);
-      } catch (error) {
-        console.error('Failed to load tests data:', error);
+      } catch (_error) {
+        // failed to load tests data
       } finally {
         setLoading(false);
       }

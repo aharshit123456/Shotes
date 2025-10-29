@@ -75,6 +75,20 @@ export interface MessageDTO {
   timestamp: string | number;
 }
 
+export interface Activity {
+  id: string;
+  activity_type: string;
+  title: string;
+  message: string;
+  created_at: string;
+}
+
+export interface TopScore {
+  id: string;
+  score: number;
+  percentage: number;
+}
+
 export const api = {
   async get<T>(endpoint: string): Promise<T> {
     const response = await fetch(`${API_HTTP_BASE}${endpoint}`);
@@ -111,7 +125,7 @@ export const api = {
 
 // Dashboard APIs
 export const getStudentActivities = (studentId: string) =>
-  api.get<Record<string, unknown>[]>(`/dashboard/activities/${studentId}`);
+  api.get<Activity[]>(`/dashboard/activities/${studentId}`);
 
 export const getStudentGrades = (studentId: string) =>
   api.get<Grade[]>(`/dashboard/grades/${studentId}`);
@@ -120,7 +134,7 @@ export const updateGrade = (gradeId: string, gradeData: GradeInput) =>
   api.put<Grade>(`/grades/${gradeId}`, gradeData);
 
 export const getTopScores = (studentId: string) =>
-  api.get<Record<string, unknown>[]>(`/dashboard/scores/${studentId}`);
+  api.get<TopScore[]>(`/dashboard/scores/${studentId}`);
 
 // Courses APIs
 export const getCourses = () => api.get<Course[]>('/courses');

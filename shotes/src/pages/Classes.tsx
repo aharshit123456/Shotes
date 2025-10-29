@@ -1,15 +1,16 @@
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonCard, IonCardContent, IonChip, IonItem, IonAvatar, IonLabel, IonButton } from '@ionic/react';
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { getStudentEnrollments, getCourseClasses, getLiveClasses } from '../shared/services/api';
+import { getStudentEnrollments, getCourseClasses, getLiveClasses, type Enrollment, type Course } from '../shared/services/api';
 import { getCourses } from '../shared/services/api';
 
 const STUDENT_ID = 'student1';
 
 const Classes: React.FC = () => {
-  const [enrollments, setEnrollments] = useState<any[]>([]);
-  const [currentClasses, setCurrentClasses] = useState<any[]>([]);
-  const [upcomingClasses, setUpcomingClasses] = useState<any[]>([]);
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  type ClassSession = { id: string; status: string; scheduled_start: string; scheduled_end: string; course?: Course | null };
+  const [currentClasses, setCurrentClasses] = useState<ClassSession[]>([]);
+  const [upcomingClasses, setUpcomingClasses] = useState<ClassSession[]>([]);
   const [subjects, setSubjects] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const history = useHistory();
@@ -17,14 +18,14 @@ const Classes: React.FC = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const enrolls = await getStudentEnrollments(STUDENT_ID).catch(() => []);
+        const enrolls = await getStudentEnrollments(STUDENT_ID).catch(() => [] as Enrollment[]);
         setEnrollments(enrolls);
         
         // Get unique subjects
         const subjectSet = new Set<string>();
         for (const enroll of enrolls) {
           const course = await getCourses().then(courses => 
-            courses.find((c: any) => c.id === enroll.course_id)
+            courses.find((c) => c.id === enroll.course_id) || null
           ).catch(() => null);
           if (course) {
             subjectSet.add(course.subject);
@@ -34,13 +35,13 @@ const Classes: React.FC = () => {
 
         // Get classes for enrolled courses
         const now = new Date();
-        const allCurrent: any[] = [];
-        const allUpcoming: any[] = [];
+        const allCurrent: ClassSession[] = [];
+        const allUpcoming: ClassSession[] = [];
 
         for (const enroll of enrolls) {
-          const classes = await getCourseClasses(enroll.course_id).catch(() => []);
+          const classes = await getCourseClasses(enroll.course_id).catch(() => [] as any[]);
           const course = await getCourses().then(courses => 
-            courses.find((c: any) => c.id === enroll.course_id)
+            courses.find((c) => c.id === enroll.course_id) || null
           ).catch(() => null);
 
           classes.forEach((cls: any) => {
@@ -48,17 +49,17 @@ const Classes: React.FC = () => {
             const scheduledEnd = new Date(cls.scheduled_end);
             
             if (cls.status === 'live' || (now >= scheduledStart && now <= scheduledEnd)) {
-              allCurrent.push({ ...cls, course });
+              allCurrent.push({ ...cls, course } as ClassSession);
             } else if (scheduledStart > now) {
-              allUpcoming.push({ ...cls, course });
+              allUpcoming.push({ ...cls, course } as ClassSession);
             }
           });
         }
 
         setCurrentClasses(allCurrent.slice(0, 2));
         setUpcomingClasses(allUpcoming.slice(0, 2));
-      } catch (error) {
-        console.error('Failed to load classes data:', error);
+      } catch (_error) {
+        // failed to load classes data
       } finally {
         setLoading(false);
       }

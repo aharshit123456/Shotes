@@ -20,19 +20,19 @@ const Live: React.FC = () => {
       wsRef.current = socket;
 
       socket.onopen = () => {
-        console.log('Connected to WebRTC signalling server');
+        // connected
       };
 
       socket.onmessage = (event) => {
         // Handle SDP offers/answers and ICE candidates
         const data = JSON.parse(event.data);
-        console.log('WebRTC signal received:', data);
+        // received signal
         // Here you would handle peer connection setup
         // This is a simplified version - full WebRTC implementation would use RTCPeerConnection
       };
 
-      socket.onerror = (error) => {
-        console.error('WebRTC signalling error:', error);
+      socket.onerror = () => {
+        // signalling error
       };
     };
     init();

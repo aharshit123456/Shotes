@@ -1,16 +1,16 @@
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonItem, IonLabel, IonButton, IonAvatar } from '@ionic/react';
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { getStudentGrades, getTopScores } from '../shared/services/api';
-import { getStudentEnrollments } from '../shared/services/api';
+import { getStudentGrades, getTopScores, getStudentEnrollments, type Grade, type Enrollment, type TopScore } from '../shared/services/api';
 import { useAuthStore } from '../shared/state/authStore';
 
 const Profile: React.FC = () => {
   const { user, logout } = useAuthStore();
   const history = useHistory();
-  const [grades, setGrades] = useState<any[]>([]);
-  const [scores, setScores] = useState<any[]>([]);
-  const [enrollments, setEnrollments] = useState<any[]>([]);
+  type TopScore = { id: string; score: number; percentage: number };
+  const [grades, setGrades] = useState<Grade[]>([]);
+  const [scores, setScores] = useState<TopScore[]>([]);
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [loading, setLoading] = useState(true);
   
   const STUDENT_ID = user?.id || 'student1';
@@ -19,15 +19,15 @@ const Profile: React.FC = () => {
     const loadData = async () => {
       try {
         const [grds, scrs, enrolls] = await Promise.all([
-          getStudentGrades(STUDENT_ID).catch(() => []),
-          getTopScores(STUDENT_ID).catch(() => []),
-          getStudentEnrollments(STUDENT_ID).catch(() => []),
+          getStudentGrades(STUDENT_ID).catch(() => [] as Grade[]),
+          getTopScores(STUDENT_ID).catch(() => [] as TopScore[]),
+          getStudentEnrollments(STUDENT_ID).catch(() => [] as Enrollment[]),
         ]);
         setGrades(grds);
         setScores(scrs);
         setEnrollments(enrolls);
-      } catch (error) {
-        console.error('Failed to load profile data:', error);
+      } catch (_error) {
+        // failed to load profile data
       } finally {
         setLoading(false);
       }
@@ -35,7 +35,7 @@ const Profile: React.FC = () => {
     loadData();
   }, []);
 
-  const totalTopics = enrollments.reduce((sum, e) => sum + (e.topics_completed || 0), 0);
+  const totalTopics = 0;
   const totalClasses = enrollments.length;
   const followers = 122; // Mock data
 

@@ -16,7 +16,7 @@ const Login: React.FC = () => {
   const { login, register } = useAuthStore();
   const history = useHistory();
 
-  console.log('Login component rendering');
+  // rendering
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,12 +33,13 @@ const Login: React.FC = () => {
         await register(email, password, fullName, username, role);
       }
       history.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message || 'Authentication failed');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Authentication failed';
+      setError(message);
     }
   };
 
-  console.log('Login component rendering, isLogin:', isLogin);
+  // rendering state
   
   return (
     <div style={{ background: 'white', minHeight: '100vh', padding: 20 }}>
