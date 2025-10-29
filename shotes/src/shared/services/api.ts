@@ -89,6 +89,13 @@ export interface TopScore {
   percentage: number;
 }
 
+export interface ClassSessionDTO {
+  id: string;
+  status: string;
+  scheduled_start: string;
+  scheduled_end: string;
+}
+
 export const api = {
   async get<T>(endpoint: string): Promise<T> {
     const response = await fetch(`${API_HTTP_BASE}${endpoint}`);
@@ -149,10 +156,10 @@ export const enrollInCourse = (studentId: string, courseId: string) =>
 
 // Classes APIs
 export const getCourseClasses = (courseId: string) =>
-  api.get<Record<string, unknown>[]>(`/classes/course/${courseId}`);
+  api.get<ClassSessionDTO[]>(`/classes/course/${courseId}`);
 
 export const getLiveClasses = (courseId: string) =>
-  api.get<Record<string, unknown>[]>(`/classes/live/${courseId}`);
+  api.get<ClassSessionDTO[]>(`/classes/live/${courseId}`);
 
 // Tests APIs
 export const getCourseTests = (courseId: string) =>

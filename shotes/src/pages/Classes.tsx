@@ -1,14 +1,14 @@
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonCard, IonCardContent, IonChip, IonItem, IonAvatar, IonLabel, IonButton } from '@ionic/react';
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { getStudentEnrollments, getCourseClasses, getLiveClasses, type Enrollment, type Course } from '../shared/services/api';
+import { getStudentEnrollments, getCourseClasses, type Enrollment, type Course, type ClassSessionDTO } from '../shared/services/api';
 import { getCourses } from '../shared/services/api';
 
 const STUDENT_ID = 'student1';
 
 const Classes: React.FC = () => {
-  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
-  type ClassSession = { id: string; status: string; scheduled_start: string; scheduled_end: string; course?: Course | null };
+  // const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  type ClassSession = ClassSessionDTO & { course?: Course | null };
   const [currentClasses, setCurrentClasses] = useState<ClassSession[]>([]);
   const [upcomingClasses, setUpcomingClasses] = useState<ClassSession[]>([]);
   const [subjects, setSubjects] = useState<string[]>([]);
@@ -19,7 +19,6 @@ const Classes: React.FC = () => {
     const loadData = async () => {
       try {
         const enrolls = await getStudentEnrollments(STUDENT_ID).catch(() => [] as Enrollment[]);
-        setEnrollments(enrolls);
         
         // Get unique subjects
         const subjectSet = new Set<string>();
@@ -39,12 +38,12 @@ const Classes: React.FC = () => {
         const allUpcoming: ClassSession[] = [];
 
         for (const enroll of enrolls) {
-          const classes = await getCourseClasses(enroll.course_id).catch(() => [] as any[]);
+          const classes = await getCourseClasses(enroll.course_id).catch(() => [] as ClassSessionDTO[]);
           const course = await getCourses().then(courses => 
             courses.find((c) => c.id === enroll.course_id) || null
           ).catch(() => null);
 
-          classes.forEach((cls: any) => {
+          (classes as ClassSessionDTO[]).forEach((cls) => {
             const scheduledStart = new Date(cls.scheduled_start);
             const scheduledEnd = new Date(cls.scheduled_end);
             

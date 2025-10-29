@@ -1,4 +1,4 @@
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonItem, IonLabel, IonButton, IonAvatar } from '@ionic/react';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonCard, IonCardContent, IonItem, IonLabel, IonButton, IonAvatar } from '@ionic/react';
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { getStudentGrades, getTopScores, getStudentEnrollments, type Grade, type Enrollment, type TopScore } from '../shared/services/api';
@@ -100,7 +100,7 @@ const Profile: React.FC = () => {
           ) : grades.length > 0 ? (
             <IonCard>
               <IonCardContent>
-                {grades.map((g: any) => (
+                {grades.map((g: Grade) => (
                   <IonItem key={g.id} lines="none" style={{ marginBottom: 8 }}>
                     <IonLabel>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -127,7 +127,7 @@ const Profile: React.FC = () => {
           <h2 style={{ marginTop: 24, marginBottom: 12 }}>Highest Scores</h2>
           {scores.length > 0 ? (
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              {scores.map((s: any) => (
+              {scores.map((s: TopScore) => (
                 <IonCard key={s.id} style={{ flex: '1 1 40%', minWidth: 150 }}>
                   <IonCardContent style={{ textAlign: 'center', padding: '20px 16px' }}>
                     <div style={{

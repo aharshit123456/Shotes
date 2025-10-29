@@ -52,7 +52,7 @@ const Dashboard: React.FC = () => {
           {loading ? (
             <div>Loading...</div>
           ) : activities.length > 0 ? (
-            activities.map((act: any) => (
+            activities.map((act: Activity) => (
               <IonCard key={act.id} style={{ marginBottom: 12 }}>
                 <IonCardHeader>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -85,7 +85,7 @@ const Dashboard: React.FC = () => {
           {grades.length > 0 ? (
             <IonCard>
               <IonCardContent>
-                {grades.map((g: any) => (
+                {grades.map((g: Grade) => (
                   <IonItem key={g.id} lines="none" style={{ marginBottom: 8 }}>
                     <IonLabel>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -112,7 +112,7 @@ const Dashboard: React.FC = () => {
           <h2 style={{ marginTop: 24, marginBottom: 12 }}>Highest Scores</h2>
           {scores.length > 0 ? (
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              {scores.map((s: any) => (
+              {scores.map((s: TopScore) => (
                 <IonCard key={s.id} style={{ flex: '1 1 40%', minWidth: 150 }}>
                   <IonCardContent style={{ textAlign: 'center', padding: '20px 16px' }}>
                     <div style={{

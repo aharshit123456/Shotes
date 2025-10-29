@@ -25,8 +25,7 @@ const Explore: React.FC = () => {
         // Track enrolled course IDs
         const enrolledIds = new Set(enrollments.map((e) => e.course_id));
         setEnrolledCourses(enrolledIds);
-      } catch (error) {
-        console.error('Failed to load courses:', error);
+      } catch (_error) {
       } finally {
         setLoading(false);
       }
@@ -45,8 +44,7 @@ const Explore: React.FC = () => {
       setEnrolledCourses(prev => new Set([...Array.from(prev), courseId]));
       setToastMessage(`Successfully enrolled in ${courseTitle}!`);
       setShowToast(true);
-    } catch (error) {
-      console.error('Failed to enroll:', error);
+    } catch (_error) {
       setToastMessage('Failed to enroll in course. Please try again.');
       setShowToast(true);
     }

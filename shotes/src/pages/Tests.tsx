@@ -1,4 +1,4 @@
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonCard, IonCardContent, IonItem, IonLabel, IonChip } from '@ionic/react';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonCard, IonCardContent, IonItem, IonLabel } from '@ionic/react';
 import React, { useEffect, useState } from 'react';
 import { getStudentEnrollments, getCourseTests, getCourses, type Enrollment, type Course } from '../shared/services/api';
 
@@ -16,12 +16,12 @@ const Tests: React.FC = () => {
         const allTests: CourseTest[] = [];
 
         for (const enroll of enrolls) {
-          const courseTests = await getCourseTests(enroll.course_id).catch(() => [] as any[]);
+          const courseTests = await getCourseTests(enroll.course_id).catch(() => [] as CourseTest[]);
           const course = await getCourses().then(courses => 
             courses.find((c) => c.id === enroll.course_id) || null
           ).catch(() => null);
           
-          courseTests.forEach((test: any) => {
+          courseTests.forEach((test) => {
             allTests.push({ ...test, course } as CourseTest);
           });
         }

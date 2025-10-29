@@ -46,8 +46,8 @@ const Grades: React.FC = () => {
         if (teacherCourses.length > 0) {
           setSelectedCourseId(teacherCourses[0].id);
         }
-      } catch (error) {
-        console.error('Failed to load courses:', error);
+      } catch (_error) {
+        
       } finally {
         setLoading(false);
       }
@@ -83,7 +83,7 @@ const Grades: React.FC = () => {
             percentage: courseGrade?.percentage || 0,
             enrollment_id: enrollment.id
           });
-        } catch (error) {
+        } catch (_error) {
           // Student has no grades yet
           gradesData.push({
             id: `new_${enrollment.student_id}_${courseId}`,
@@ -99,8 +99,8 @@ const Grades: React.FC = () => {
       }
 
       setStudentGrades(gradesData);
-    } catch (error) {
-      console.error('Failed to load student grades:', error);
+    } catch (_error) {
+      
     } finally {
       setLoading(false);
     }
@@ -130,8 +130,7 @@ const Grades: React.FC = () => {
 
       // Refresh the data
       loadStudentGrades(selectedCourseId);
-    } catch (error) {
-      console.error('Failed to save grade:', error);
+    } catch (_error) {
       setToastMessage('Failed to save grade. Please try again.');
       setShowToast(true);
     }

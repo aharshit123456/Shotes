@@ -25,7 +25,7 @@ const Live: React.FC = () => {
 
       socket.onmessage = (event) => {
         // Handle SDP offers/answers and ICE candidates
-        const data = JSON.parse(event.data);
+        JSON.parse(event.data);
         // received signal
         // Here you would handle peer connection setup
         // This is a simplified version - full WebRTC implementation would use RTCPeerConnection
