@@ -1,17 +1,30 @@
-import { IonContent, IonHeader, IonPage, IonSearchbar, IonTitle, IonToolbar, IonCard, IonCardContent, IonItem, IonAvatar, IonLabel } from '@ionic/react';
+import { IonContent, IonHeader, IonPage, IonSearchbar, IonTitle, IonToolbar, IonCard, IonCardContent, IonItem, IonAvatar, IonLabel, IonButton, IonToast } from '@ionic/react';
 import React, { useEffect, useState } from 'react';
-import { getCourses } from '../shared/services/api';
+import { getCourses, enrollInCourse, getStudentEnrollments } from '../shared/services/api';
+
+const STUDENT_ID = 'student1'; // TODO: Get from auth context
 
 const Explore: React.FC = () => {
   const [courses, setCourses] = useState<any[]>([]);
+  const [enrolledCourses, setEnrolledCourses] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const allCourses = await getCourses();
+        const [allCourses, enrollments] = await Promise.all([
+          getCourses(),
+          getStudentEnrollments(STUDENT_ID).catch(() => [])
+        ]);
+
         setCourses(allCourses.filter((c: any) => c.is_published));
+
+        // Track enrolled course IDs
+        const enrolledIds = new Set(enrollments.map((e: any) => e.course_id));
+        setEnrolledCourses(enrolledIds);
       } catch (error) {
         console.error('Failed to load courses:', error);
       } finally {
@@ -25,6 +38,19 @@ const Explore: React.FC = () => {
     course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     course.subject.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleEnroll = async (courseId: string, courseTitle: string) => {
+    try {
+      await enrollInCourse(STUDENT_ID, courseId);
+      setEnrolledCourses(prev => new Set([...prev, courseId]));
+      setToastMessage(`Successfully enrolled in ${courseTitle}!`);
+      setShowToast(true);
+    } catch (error) {
+      console.error('Failed to enroll:', error);
+      setToastMessage('Failed to enroll in course. Please try again.');
+      setShowToast(true);
+    }
+  };
 
   const getSubjectIcon = (subject: string) => {
     const icons: { [key: string]: string } = {
@@ -76,6 +102,19 @@ const Explore: React.FC = () => {
                       <p>{course.description || `${course.subject} - ${course.modules_count} Modules`}</p>
                     </IonLabel>
                   </IonItem>
+                  {enrolledCourses.has(course.id) ? (
+                    <IonButton expand="block" disabled style={{ marginTop: 12 }}>
+                      Already Enrolled
+                    </IonButton>
+                  ) : (
+                    <IonButton
+                      expand="block"
+                      onClick={() => handleEnroll(course.id, course.title)}
+                      style={{ marginTop: 12 }}
+                    >
+                      Enroll in Course
+                    </IonButton>
+                  )}
                 </IonCardContent>
               </IonCard>
             ))
@@ -86,6 +125,12 @@ const Explore: React.FC = () => {
           )}
         </div>
       </IonContent>
+      <IonToast
+        isOpen={showToast}
+        onDidDismiss={() => setShowToast(false)}
+        message={toastMessage}
+        duration={3000}
+      />
     </IonPage>
   );
 };

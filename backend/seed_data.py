@@ -1,5 +1,5 @@
 """Seed script to populate database with initial demo data"""
-from sqlmodel import Session
+from sqlmodel import Session, SQLModel
 from app.db.session import engine
 from app.models.user import User, UserRole
 from app.models.course import Course
@@ -13,10 +13,12 @@ from datetime import datetime, timedelta
 import bcrypt
 
 def seed():
+    # Create all tables
+    SQLModel.metadata.create_all(engine)
+
     with Session(engine) as session:
         # Create teachers
         teacher1 = User(
-            id="teacher1",
             email="jennifer.winget@shotes.com",
             full_name="Jennifer Winget",
             username="jwinget",
@@ -26,7 +28,6 @@ def seed():
         )
         
         teacher2 = User(
-            id="teacher2",
             email="elizabeth@shotes.com",
             full_name="Elizabeth Quarantine",
             username="equarantine",
@@ -35,7 +36,6 @@ def seed():
         )
         
         teacher3 = User(
-            id="teacher3",
             email="suresh.mishra@shotes.com",
             full_name="Suresh Mishra",
             username="smishra",
@@ -45,7 +45,6 @@ def seed():
         
         # Create student
         student1 = User(
-            id="student1",
             email="harshit@shotes.com",
             full_name="Harshit Agarwal",
             username="aharshit123456",
@@ -55,31 +54,37 @@ def seed():
         
         session.add_all([teacher1, teacher2, teacher3, student1])
         session.commit()
-        
+
+        # Get the auto-generated IDs
+        teacher1_id = teacher1.id
+        teacher2_id = teacher2.id
+        teacher3_id = teacher3.id
+        student1_id = student1.id
+
         # Create courses
         course1 = Course(
             id="course1",
-            teacher_id="teacher1",
+            teacher_id=teacher1_id,
             title="Mathematics",
             description="Class XI - 16 Modules",
             subject="Maths",
             modules_count=16,
             is_published=True
         )
-        
+
         course2 = Course(
             id="course2",
-            teacher_id="teacher2",
+            teacher_id=teacher2_id,
             title="Physics",
             description="Class XI - 12 Modules",
             subject="Physics",
             modules_count=12,
             is_published=True
         )
-        
+
         course3 = Course(
             id="course3",
-            teacher_id="teacher1",
+            teacher_id=teacher1_id,
             title="Chemistry",
             description="Class XI - 14 Modules",
             subject="Chemistry",
@@ -93,16 +98,16 @@ def seed():
         # Enrollments
         enroll1 = Enrollment(
             id="enroll1",
-            student_id="student1",
+            student_id=student1_id,
             course_id="course1",
             progress_percentage=75.0,
             topics_completed=60,
             status=EnrollmentStatus.ACTIVE
         )
-        
+
         enroll2 = Enrollment(
             id="enroll2",
-            student_id="student1",
+            student_id=student1_id,
             course_id="course2",
             progress_percentage=60.0,
             topics_completed=45,
@@ -116,27 +121,27 @@ def seed():
         act1 = Activity(
             id="act1",
             course_id="course1",
-            teacher_id="teacher1",
+            teacher_id=teacher1_id,
             title="Trigonometry Test Tomorrow!!!",
             message="Remember students, complete your homeworks before sleeping.",
             activity_type=ActivityType.REMINDER
         )
         act1.created_at = datetime.utcnow() - timedelta(hours=2)
-        
+
         act2 = Activity(
             id="act2",
             course_id="course2",
-            teacher_id="teacher2",
+            teacher_id=teacher2_id,
             title="Please Complete the three Equations of Motion",
             message="Homework assignment for this week.",
             activity_type=ActivityType.HOMEWORK
         )
         act2.created_at = datetime.utcnow() - timedelta(hours=1)
-        
+
         act3 = Activity(
             id="act3",
             course_id="course3",
-            teacher_id="teacher1",
+            teacher_id=teacher1_id,
             title="Remember students, complete your homeworks before sleeping",
             message="Important reminder for all students.",
             activity_type=ActivityType.ANNOUNCEMENT
@@ -150,18 +155,18 @@ def seed():
         class1 = Class(
             id="class1",
             course_id="course1",
-            teacher_id="teacher1",
+            teacher_id=teacher1_id,
             title="Mathematics Class",
             scheduled_start=datetime.utcnow() + timedelta(hours=2),
             scheduled_end=datetime.utcnow() + timedelta(hours=4),
             status=ClassStatus.SCHEDULED,
             webrtc_room_id="room_class1"
         )
-        
+
         class2 = Class(
             id="class2",
             course_id="course2",
-            teacher_id="teacher2",
+            teacher_id=teacher2_id,
             title="Physics Live",
             scheduled_start=datetime.utcnow(),
             scheduled_end=datetime.utcnow() + timedelta(hours=2),
@@ -200,16 +205,16 @@ def seed():
             id="grade1",
             enrollment_id="enroll1",
             course_id="course1",
-            student_id="student1",
+            student_id=student1_id,
             grade_letter="A+",
             percentage=95.0
         )
-        
+
         grade2 = Grade(
             id="grade2",
             enrollment_id="enroll1",
             course_id="course1",
-            student_id="student1",
+            student_id=student1_id,
             grade_letter="A-",
             percentage=90.0
         )
@@ -221,7 +226,7 @@ def seed():
         score1 = TestScore(
             id="score1",
             test_id="test1",
-            student_id="student1",
+            student_id=student1_id,
             score=88.0,
             max_score=100.0,
             percentage=88.0

@@ -84,7 +84,7 @@ const Login: React.FC = () => {
                   <IonInput
                     type="text"
                     value={fullName}
-                    onIonChange={(e) => setFullName(e.detail.value!)}
+                    onIonChange={(e) => setFullName(e.detail.value || '')}
                     required={!isLogin}
                   />
                 </IonItem>
@@ -93,7 +93,7 @@ const Login: React.FC = () => {
                   <IonInput
                     type="text"
                     value={username}
-                    onIonChange={(e) => setUsername(e.detail.value!)}
+                    onIonChange={(e) => setUsername(e.detail.value || '')}
                     required={!isLogin}
                   />
                 </IonItem>
@@ -116,7 +116,7 @@ const Login: React.FC = () => {
               <IonInput
                 type="email"
                 value={email}
-                onIonChange={(e) => setEmail(e.detail.value!)}
+                onIonChange={(e) => setEmail(e.detail.value || '')}
                 required
               />
             </IonItem>
@@ -126,7 +126,7 @@ const Login: React.FC = () => {
               <IonInput
                 type="password"
                 value={password}
-                onIonChange={(e) => setPassword(e.detail.value!)}
+                onIonChange={(e) => setPassword(e.detail.value || '')}
                 required
               />
             </IonItem>

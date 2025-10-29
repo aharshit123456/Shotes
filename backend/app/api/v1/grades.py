@@ -22,3 +22,16 @@ def create_grade(grade: GradeCreate, session: Session = Depends(get_session)):
     session.refresh(db_grade)
     return db_grade
 
+@router.put("/{grade_id}", response_model=GradeRead)
+def update_grade(grade_id: str, grade_update: GradeCreate, session: Session = Depends(get_session)):
+    grade = session.get(Grade, grade_id)
+    if not grade:
+        raise HTTPException(status_code=404, detail="Grade not found")
+
+    for field, value in grade_update.dict(exclude_unset=True).items():
+        setattr(grade, field, value)
+
+    session.commit()
+    session.refresh(grade)
+    return grade
+

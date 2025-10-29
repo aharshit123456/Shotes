@@ -11,7 +11,7 @@ class CourseBase(SQLModel):
     is_published: bool = False
 
 class Course(CourseBase, table=True):
-    id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    id: Optional[str] = Field(default=None, primary_key=True)
     teacher_id: str = Field(foreign_key="user.id")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)

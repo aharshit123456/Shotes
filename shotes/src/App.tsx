@@ -16,7 +16,8 @@ import {
   school,
   documentText,
   compass,
-  person
+  person,
+  trophy
 } from 'ionicons/icons';
 import Dashboard from './pages/Dashboard';
 import Classes from './pages/Classes';
@@ -25,6 +26,7 @@ import Explore from './pages/Explore';
 import Profile from './pages/Profile';
 import Live from './pages/Live';
 import Chat from './pages/Chat';
+import Grades from './pages/Grades';
 import Login from './pages/Login';
 import { useAuthStore } from './shared/state/authStore';
 
@@ -52,6 +54,7 @@ setupIonicReact();
 const App: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState(false);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
     // Initialize auth state from localStorage
@@ -117,6 +120,9 @@ const App: React.FC = () => {
               <Route exact path="/chat">
                 <Chat />
               </Route>
+              <Route exact path="/grades">
+                <Grades />
+              </Route>
               <Route exact path="/">
                 <Redirect to="/dashboard" />
               </Route>
@@ -130,6 +136,12 @@ const App: React.FC = () => {
                 <IonIcon aria-hidden="true" icon={school} />
                 <IonLabel>Classes</IonLabel>
               </IonTabButton>
+              {user?.role === 'teacher' && (
+                <IonTabButton tab="grades" href="/grades">
+                  <IonIcon aria-hidden="true" icon={trophy} />
+                  <IonLabel>Grades</IonLabel>
+                </IonTabButton>
+              )}
               <IonTabButton tab="tests" href="/tests">
                 <IonIcon aria-hidden="true" icon={documentText} />
                 <IonLabel>Tests</IonLabel>
