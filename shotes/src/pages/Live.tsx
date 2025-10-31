@@ -1,76 +1,141 @@
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonPage, IonTitle, IonToolbar } from '@ionic/react';
 import { mic, micOff, videocam, videocamOff } from 'ionicons/icons';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useLocalMedia } from '../shared/hooks/useLocalMedia';
 import ChatPane from '../shared/components/ChatPane';
+import { useAuthStore } from '../shared/state/authStore';
+// @ts-ignore - ensure local module resolution in some editors
+import StreamerGrid from '../shared/components/StreamerGrid';
 
 const Live: React.FC = () => {
   const { classId } = useParams<{ classId: string }>();
   const { videoRef, isCamOn, isMicOn, toggleCamera, toggleMic, error } = useLocalMedia();
+  const auth = useAuthStore();
+  const selfId = useMemo(() => auth.user?.id || crypto.randomUUID(), [auth.user?.id]);
+  const selfName = useMemo(() => auth.user?.full_name || auth.user?.username || 'Anonymous', [auth.user?.full_name, auth.user?.username]);
+
   const wsRef = useRef<WebSocket | null>(null);
-  const pcRef = useRef<RTCPeerConnection | null>(null);
-  const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
+  // Per-peer RTCPeerConnections keyed by peerId
+  const peersRef = useRef<Map<string, RTCPeerConnection>>(new Map());
+  const makingOfferRef = useRef<Map<string, boolean>>(new Map());
+  const remoteStreamsRef = useRef<Map<string, MediaStream>>(new Map());
+  const [remotePeers, setRemotePeers] = useState<Array<{ id: string; name: string; stream: MediaStream }>>([]);
+
+  const updateRemotePeers = () => {
+    const list: Array<{ id: string; name: string; stream: MediaStream }> = [];
+    remoteStreamsRef.current.forEach((stream, id) => {
+      // Name is not known via backend; fall back to short id for now.
+      list.push({ id, name: id.slice(0, 6), stream });
+    });
+    setRemotePeers(list);
+  };
 
   useEffect(() => {
     if (!classId) return;
     
-    // Connect to WebRTC signalling server and setup RTCPeerConnection
+    // Connect to WebRTC signalling server and setup per-peer connections
     const init = async () => {
       const { WS_BASE } = await import('../shared/services/api');
       const socket = new WebSocket(`${WS_BASE}/ws/rtc/${classId}`);
       wsRef.current = socket;
 
-      const pc = new RTCPeerConnection({
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-        ]
-      });
-      pcRef.current = pc;
+      const createPeer = (peerId: string) => {
+        if (peersRef.current.has(peerId)) return peersRef.current.get(peerId)!;
+        const pc = new RTCPeerConnection({
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+          ]
+        });
 
-      // Local tracks
-      if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach(track => pc.addTrack(track, stream));
-      }
+        makingOfferRef.current.set(peerId, false);
 
-      // Remote stream
-      pc.ontrack = (event) => {
-        const [remoteStream] = event.streams;
-        if (remoteVideoRef.current) {
-          remoteVideoRef.current.srcObject = remoteStream;
+        // Add local tracks
+        if (videoRef.current && videoRef.current.srcObject) {
+          const stream = videoRef.current.srcObject as MediaStream;
+          stream.getTracks().forEach(track => pc.addTrack(track, stream));
         }
-      };
 
-      // ICE candidates -> send to peer
-      pc.onicecandidate = (event) => {
-        if (event.candidate && wsRef.current?.readyState === WebSocket.OPEN) {
-          wsRef.current.send(JSON.stringify({ type: 'ice', candidate: event.candidate }));
-        }
+        // Remote tracks
+        pc.ontrack = (event) => {
+          const [remoteStream] = event.streams;
+          remoteStreamsRef.current.set(peerId, remoteStream);
+          updateRemotePeers();
+        };
+
+        // ICE candidates -> send to target peer
+        pc.onicecandidate = (event) => {
+          if (event.candidate && wsRef.current?.readyState === WebSocket.OPEN) {
+            wsRef.current.send(JSON.stringify({
+              type: 'ice',
+              candidate: event.candidate,
+              sender: selfId,
+              senderName: selfName,
+              target: peerId,
+            }));
+          }
+        };
+
+        peersRef.current.set(peerId, pc);
+        return pc;
       };
 
       socket.onopen = async () => {
-        // Create & send offer if we have local media
-        if (pcRef.current) {
-          const offer = await pcRef.current.createOffer();
-          await pcRef.current.setLocalDescription(offer);
-          wsRef.current?.send(JSON.stringify({ type: 'offer', sdp: offer }));
-        }
+        // Announce presence; existing peers will initiate offers to us
+        wsRef.current?.send(JSON.stringify({ type: 'join', sender: selfId, senderName: selfName }));
       };
 
       socket.onmessage = async (event) => {
         const msg = JSON.parse(event.data);
-        if (!pcRef.current) return;
-        if (msg.type === 'offer') {
-          await pcRef.current.setRemoteDescription(new RTCSessionDescription(msg.sdp));
-          const answer = await pcRef.current.createAnswer();
-          await pcRef.current.setLocalDescription(answer);
-          wsRef.current?.send(JSON.stringify({ type: 'answer', sdp: answer }));
-        } else if (msg.type === 'answer') {
-          await pcRef.current.setRemoteDescription(new RTCSessionDescription(msg.sdp));
-        } else if (msg.type === 'ice' && msg.candidate) {
+        // Ignore our own broadcasts
+        if (msg.sender && msg.sender === selfId) return;
+
+        // Peer discovery: existing participants create offers to the joiner
+        if (msg.type === 'join' && msg.sender) {
+          const peerId = msg.sender as string;
+          const pc = createPeer(peerId);
           try {
-            await pcRef.current.addIceCandidate(new RTCIceCandidate(msg.candidate));
+            makingOfferRef.current.set(peerId, true);
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            wsRef.current?.send(JSON.stringify({ type: 'offer', sdp: offer, sender: selfId, senderName: selfName, target: peerId }));
+          } finally {
+            makingOfferRef.current.set(peerId, false);
+          }
+          return;
+        }
+
+        // Targeted signaling: only handle if addressed to us
+        if (msg.target && msg.target !== selfId) return;
+
+        if (msg.type === 'offer' && msg.sender) {
+          const peerId = msg.sender as string;
+          const pc = createPeer(peerId);
+          // Perfect negotiation: rollback if not stable
+          if (pc.signalingState !== 'stable') {
+            try { await pc.setLocalDescription({ type: 'rollback' } as any); } catch {}
+          }
+          await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          wsRef.current?.send(JSON.stringify({ type: 'answer', sdp: answer, sender: selfId, senderName: selfName, target: peerId }));
+        } else if (msg.type === 'answer' && msg.sender) {
+          const peerId = msg.sender as string;
+          const pc = peersRef.current.get(peerId);
+          if (!pc) return;
+          // Only set remote answer if we have a local offer outstanding
+          if (pc.signalingState === 'have-local-offer') {
+            await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+          }
+        } else if (msg.type === 'ice' && msg.candidate && msg.sender) {
+          const peerId = msg.sender as string;
+          const pc = peersRef.current.get(peerId);
+          if (!pc) return;
+          try {
+            // Only add ICE after remote description is set
+            if (pc.remoteDescription) {
+              await pc.addIceCandidate(new RTCIceCandidate(msg.candidate));
+            }
           } catch (_) {
             // Ignore invalid/duplicate ICE candidates
           }
@@ -88,10 +153,12 @@ const Live: React.FC = () => {
         wsRef.current.close();
         wsRef.current = null;
       }
-      if (pcRef.current) {
-        pcRef.current.close();
-        pcRef.current = null;
-      }
+      // Close all peers
+      peersRef.current.forEach(pc => pc.close());
+      peersRef.current.clear();
+      makingOfferRef.current.clear();
+      remoteStreamsRef.current.clear();
+      setRemotePeers([]);
     };
   }, [classId]);
 
@@ -113,10 +180,10 @@ const Live: React.FC = () => {
       <IonContent>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 12 }}>
           {error && <div style={{ padding: 12, color: 'var(--ion-color-danger)' }}>{error}</div>}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', background: 'black', borderRadius: 8 }} />
-            <video ref={remoteVideoRef} autoPlay playsInline style={{ width: '100%', background: 'black', borderRadius: 8 }} />
-          </div>
+          <StreamerGrid
+            local={{ id: selfId, name: selfName, videoRef }}
+            remotes={remotePeers}
+          />
           <div>
             <ChatPane height={280} roomId={classId || 'demo'} />
           </div>
