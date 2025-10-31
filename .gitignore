@@ -12,3 +12,6 @@
 /captures
 .externalNativeBuild
 .cxx
+backend/app/api/v1/__pycache__/*
+backend/app/api/v1/__pycache__/*.pyc
+*.db
